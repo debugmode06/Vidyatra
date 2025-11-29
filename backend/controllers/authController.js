@@ -1,4 +1,3 @@
-// backend/controllers/authController.js
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
@@ -10,7 +9,7 @@ const generateToken = (user) => {
   );
 };
 
-// For now we implement only login (admin can create users from DB or future API)
+// Temporary login (plain password)
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -24,12 +23,11 @@ export const loginUser = async (req, res) => {
         .json({ message: "Invalid email or password (user not found)" });
     }
 
-    // 2) Check password
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
+    // 2) Check password (plain text comparison)
+    if (password !== user.password) {
       return res
         .status(401)
-        .json({ message: "Invalid email or password (wrong password)" });
+        .json({ message: "Invalid email or password" });
     }
 
     // 3) Generate token

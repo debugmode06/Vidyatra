@@ -3,7 +3,7 @@ import { LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const [role, setRole] = useState("student"); // still used for UI label
+  const [role, setRole] = useState("student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,34 +18,37 @@ export default function Login() {
     try {
       const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      // Prevent crash if response is not JSON
+      let data = {};
+      try {
+        data = await res.json();
+      } catch {
+        data = { message: "Server returned invalid response" };
+      }
+
       setLoading(false);
 
       if (!res.ok) {
-        setError(data.message || "Login failed");
+        setError(data.message || "Invalid email or password");
         return;
       }
 
-      // Save token + user in localStorage
+      // Store token + user
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("role", data.user.role);
 
-      // Redirect based on REAL role from backend
-      if (data.user.role === "student") navigate("/student/dashboard");
-      else if (data.user.role === "faculty") navigate("/faculty/dashboard");
-      else if (data.user.role === "admin") navigate("/admin/dashboard");
-      else navigate("/login");
+      // Redirect based on backend role
+      const actualRole = data.user.role.toLowerCase();
+      navigate(`/${actualRole}/dashboard`);
     } catch (err) {
-      console.error(err);
+      console.error("Login Error:", err);
       setLoading(false);
-      setError("Something went wrong. Please try again.");
+      setError("Unable to connect to server. Try again.");
     }
   };
 
@@ -56,7 +59,6 @@ export default function Login() {
           VIDYATRA LOGIN
         </h1>
 
-        {/* Role selector is only for button label now (backend decides actual role) */}
         <div className="grid grid-cols-3 gap-3">
           {["student", "faculty", "admin"].map((r) => (
             <button
@@ -64,9 +66,7 @@ export default function Login() {
               type="button"
               onClick={() => setRole(r)}
               className={`p-2 rounded-lg font-semibold capitalize ${
-                role === r
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700"
+                role === r ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"
               }`}
             >
               {r}

@@ -24,6 +24,7 @@ import Suggestions from "./student/pages/Suggestions";
 import StudentProfile from "./student/pages/profile";
 
 // FACULTY PAGES
+
 import FacultyDashboard from "./faculty/pages/Dashboard";
 import Students from "./faculty/pages/Students";
 import FacultyTimetable from "./faculty/pages/Timetable";
